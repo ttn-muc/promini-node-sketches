@@ -35,6 +35,7 @@
 #include <BME280I2C.h>
 #include <Wire.h>
 #include <CayenneLPP.h>
+#include <Adafruit_BMP085.h>
 #include "config.h"
 
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
@@ -56,7 +57,7 @@ const lmic_pinmap lmic_pins = {
 };
 
 CayenneLPP lpp(51);
-BME280I2C bme;
+Adafruit_BMP085 bmp;
 
 void onEvent (ev_t ev) {
     Serial.print(os_getTime());
@@ -146,18 +147,15 @@ void do_send(osjob_t* j){
     if (LMIC.opmode & OP_TXRXPEND) {
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
-      float temp(NAN), hum(NAN), pres(NAN);
 
-   BME280::TempUnit tempUnit(BME280::TempUnit_Celcius);
-   BME280::PresUnit presUnit(BME280::PresUnit_hPa);
-
-   bme.read(pres, temp, hum, tempUnit, presUnit);
 
         lpp.reset();
-        lpp.addTemperature(1, temp);
-        lpp.addRelativeHumidity(2, hum);
-        lpp.addBarometricPressure(3, pres);
+        lpp.addTemperature(1, bmp.readTemperature());
+      //  lpp.addRelativeHumidity(2, hum);
+        lpp.addBarometricPressure(3, bmp.readPressure());
 
+
+        
         // Prepare upstream data transmission at the next possible time.
         LMIC_setTxData2(1, lpp.getBuffer(), lpp.getSize(), 0);
         Serial.println(F("Packet queued"));
@@ -169,12 +167,8 @@ void setup() {
     Serial.begin(9600);
     Serial.println(F("Starting TTN Muc Cayenne"));
 
-  while(!bme.begin())
-  {
-    Serial.println("Could not find BME280 sensor!");
-    delay(1000);
-  }
-
+  bmp.begin(); 
+  
     // LMIC init
     os_init();
     // Reset the MAC state. Session and pending data transfers will be discarded.
