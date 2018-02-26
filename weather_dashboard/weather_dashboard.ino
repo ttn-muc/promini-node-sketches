@@ -148,7 +148,7 @@ void do_send(osjob_t* j){
     } else {
       float temp(NAN), hum(NAN), pres(NAN);
 
-   BME280::TempUnit tempUnit(BME280::TempUnit_Celcius);
+   BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
    BME280::PresUnit presUnit(BME280::PresUnit_hPa);
 
    bme.read(pres, temp, hum, tempUnit, presUnit);
