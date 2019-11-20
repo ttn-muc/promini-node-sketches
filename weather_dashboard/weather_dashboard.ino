@@ -209,6 +209,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println(F("Starting TTN Muc Cayenne"));
 
+  Wire.begin();
+
   while (!bme.begin()) {
     Serial.println("Could not find BME280 sensor!");
     delay(1000);
